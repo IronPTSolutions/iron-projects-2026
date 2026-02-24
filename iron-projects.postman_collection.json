@@ -1,0 +1,405 @@
+{
+	"info": {
+		"name": "Iron Projects",
+		"description": "Colección de endpoints para la API de Iron Projects.\n\nFlujo recomendado:\n1. Registrar usuario (POST /api/users)\n2. Iniciar sesión (POST /api/sessions)\n3. Actualizar perfil (PATCH /api/users/me)\n4. Crear proyecto, reviews, mensajes…\n\nLa sesión se mantiene automáticamente mediante cookies.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "otherUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "messageId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Registro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('userId', body._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alumno@example.com\",\n  \"password\": \"s3cret\",\n  \"inviteCode\": \"IRONHACK2025\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["users"]
+						},
+						"description": "Registra un nuevo alumno. Requiere código de invitación válido."
+					},
+					"response": []
+				},
+				{
+					"name": "Iniciar sesión",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('userId', body._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alumno@example.com\",\n  \"password\": \"s3cret\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["sessions"]
+						},
+						"description": "Inicia sesión con email y password. La cookie de sesión se guarda automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Cerrar sesión",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["sessions"]
+						},
+						"description": "Cierra la sesión activa. Responde con 204."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Actualizar perfil",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ana García\",\n  \"bio\": \"Fullstack developer apasionada por React\",\n  \"githubUrl\": \"https://github.com/anagarcia\",\n  \"linkedinUrl\": \"https://linkedin.com/in/anagarcia\",\n  \"location\": \"Barcelona\",\n  \"languages\": [\"ES\", \"EN\"],\n  \"promotion\": \"09.2025\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						},
+						"description": "Actualiza el perfil del usuario autenticado. Todos los campos son opcionales."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver perfil de alumno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{otherUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "{{otherUserId}}"]
+						},
+						"description": "Devuelve el perfil de un alumno con sus proyectos populados."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Crear proyecto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('projectId', body._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"GameHub\",\n  \"description\": \"Plataforma de juegos online multijugador\",\n  \"module\": 2,\n  \"githubRepo\": \"https://github.com/anagarcia/gamehub\",\n  \"liveUrl\": \"https://gamehub.netlify.app\",\n  \"images\": []\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/projects",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects"]
+						},
+						"description": "Crea un nuevo proyecto asociado al usuario autenticado."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar proyectos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects"]
+						},
+						"description": "Lista todos los proyectos. Soporta filtros por query params."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar proyectos (con filtros)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects?module=2&promotion=09.2025",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects"],
+							"query": [
+								{
+									"key": "module",
+									"value": "2"
+								},
+								{
+									"key": "promotion",
+									"value": "09.2025"
+								},
+								{
+									"key": "author",
+									"value": "{{userId}}",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lista proyectos filtrados por módulo, promoción y/o autor."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver detalle de proyecto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects", "{{projectId}}"]
+						},
+						"description": "Devuelve el detalle de un proyecto con sus reviews populadas."
+					},
+					"response": []
+				},
+				{
+					"name": "Editar proyecto",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"GameHub v2\",\n  \"description\": \"Descripción actualizada\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects", "{{projectId}}"]
+						},
+						"description": "Edita un proyecto propio. Solo el autor puede editarlo."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar proyecto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects", "{{projectId}}"]
+						},
+						"description": "Elimina un proyecto propio. Solo el autor puede eliminarlo. Responde con 204."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Crear review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"comment\": \"Muy buen proyecto, la UI está genial\",\n  \"rating\": 4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects", "{{projectId}}", "reviews"]
+						},
+						"description": "Crea una review sobre un proyecto. No se puede hacer review del propio proyecto ni más de una por proyecto. Rating entre 1 y 5."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Messages",
+			"item": [
+				{
+					"name": "Enviar mensaje",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('messageId', body._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"Pregunta sobre tu proyecto M2\",\n  \"body\": \"Hola! Me encantó tu proyecto. ¿Qué stack usaste para el backend?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/{{otherUserId}}/messages",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "{{otherUserId}}", "messages"]
+						},
+						"description": "Envía un mensaje privado a otro alumno. El :id de la URL es el receptor."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver mensajes recibidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/me/messages",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me", "messages"]
+						},
+						"description": "Devuelve los mensajes recibidos por el usuario autenticado, ordenados por fecha descendente. Los mensajes no leídos se marcan como leídos automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar mensaje enviado",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/messages/{{messageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["messages", "{{messageId}}"]
+						},
+						"description": "Elimina un mensaje enviado por el usuario autenticado que aún no haya sido leído por el receptor. Responde con 204."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
