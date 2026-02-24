@@ -5,7 +5,14 @@ import Message from "../models/message.model.js";
 import createHttpError from "http-errors";
 
 export async function create(req, res) {
+  const inviteCodes = process.env.VALID_INVITE_CODES?.split(",") || [];
+
+  if (!inviteCodes.includes(req.body.inviteCode)) {
+    throw createHttpError(400, "invalid invite code");
+  }
+
   const user = await User.create(req.body);
+
   res.json(user);
 }
 

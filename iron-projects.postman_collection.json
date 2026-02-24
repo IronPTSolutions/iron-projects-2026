@@ -26,6 +26,11 @@
 			"type": "string"
 		},
 		{
+			"key": "reviewId",
+			"value": "",
+			"type": "string"
+		},
+		{
 			"key": "messageId",
 			"value": "",
 			"type": "string"
@@ -44,7 +49,7 @@
 								"exec": [
 									"if (pm.response.code === 201) {",
 									"    const body = pm.response.json();",
-									"    pm.collectionVariables.set('userId', body._id);",
+									"    pm.collectionVariables.set('userId', body.id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -61,14 +66,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"alumno@example.com\",\n  \"password\": \"s3cret\",\n  \"inviteCode\": \"IRONHACK2025\"\n}"
+							"raw": "{\n  \"email\": \"alumno@example.com\",\n  \"password\": \"s3cret\",\n  \"name\": \"Alumno Demo\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users",
 							"host": ["{{baseUrl}}"],
 							"path": ["users"]
 						},
-						"description": "Registra un nuevo alumno. Requiere código de invitación válido."
+						"description": "Registra un nuevo usuario. Campos requeridos: email, password, name. Campos opcionales: bio, githubUrl, linkedinUrl, location, languages, avatarUrl, promotion."
 					},
 					"response": []
 				},
@@ -81,7 +86,7 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    const body = pm.response.json();",
-									"    pm.collectionVariables.set('userId', body._id);",
+									"    pm.collectionVariables.set('userId', body.id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -129,6 +134,20 @@
 			"name": "Users",
 			"item": [
 				{
+					"name": "Ver mi perfil",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						},
+						"description": "Devuelve el perfil del usuario autenticado con sus proyectos, mensajes enviados y mensajes recibidos populados."
+					},
+					"response": []
+				},
+				{
 					"name": "Actualizar perfil",
 					"request": {
 						"method": "PATCH",
@@ -147,7 +166,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["users", "me"]
 						},
-						"description": "Actualiza el perfil del usuario autenticado. Todos los campos son opcionales."
+						"description": "Actualiza el perfil del usuario autenticado. Todos los campos son opcionales: name, bio, githubUrl, linkedinUrl, location, languages, avatarUrl, promotion."
 					},
 					"response": []
 				},
@@ -161,7 +180,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["users", "{{otherUserId}}"]
 						},
-						"description": "Devuelve el perfil de un alumno con sus proyectos populados."
+						"description": "Devuelve el perfil de un alumno con sus proyectos populados. Para otros usuarios solo se populan proyectos (no mensajes)."
 					},
 					"response": []
 				}
@@ -179,7 +198,7 @@
 								"exec": [
 									"if (pm.response.code === 201) {",
 									"    const body = pm.response.json();",
-									"    pm.collectionVariables.set('projectId', body._id);",
+									"    pm.collectionVariables.set('projectId', body.id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -203,7 +222,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects"]
 						},
-						"description": "Crea un nuevo proyecto asociado al usuario autenticado."
+						"description": "Crea un nuevo proyecto asociado al usuario autenticado. Campos requeridos: title, description, module (1, 2 o 3). Opcionales: githubRepo, liveUrl, images (máx. 5). El author y promotion se asignan automáticamente."
 					},
 					"response": []
 				},
@@ -217,7 +236,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects"]
 						},
-						"description": "Lista todos los proyectos. Soporta filtros por query params."
+						"description": "Lista todos los proyectos."
 					},
 					"response": []
 				},
@@ -246,7 +265,7 @@
 								}
 							]
 						},
-						"description": "Lista proyectos filtrados por módulo, promoción y/o autor."
+						"description": "Lista proyectos filtrados por módulo, promoción y/o autor. Todos los filtros son opcionales."
 					},
 					"response": []
 				},
@@ -260,7 +279,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects", "{{projectId}}"]
 						},
-						"description": "Devuelve el detalle de un proyecto con sus reviews populadas."
+						"description": "Devuelve el detalle de un proyecto con sus reviews populadas (incluyendo el autor de cada review)."
 					},
 					"response": []
 				},
@@ -283,7 +302,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects", "{{projectId}}"]
 						},
-						"description": "Edita un proyecto propio. Solo el autor puede editarlo."
+						"description": "Edita un proyecto existente. No se puede cambiar el author. Campos editables: title, description, module, githubRepo, liveUrl, images."
 					},
 					"response": []
 				},
@@ -297,7 +316,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects", "{{projectId}}"]
 						},
-						"description": "Elimina un proyecto propio. Solo el autor puede eliminarlo. Responde con 204."
+						"description": "Elimina un proyecto. Solo el autor puede eliminarlo. Responde con 204."
 					},
 					"response": []
 				}
@@ -308,6 +327,20 @@
 			"item": [
 				{
 					"name": "Crear review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('reviewId', body.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -325,7 +358,21 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["projects", "{{projectId}}", "reviews"]
 						},
-						"description": "Crea una review sobre un proyecto. No se puede hacer review del propio proyecto ni más de una por proyecto. Rating entre 1 y 5."
+						"description": "Crea una review sobre un proyecto. Campos requeridos: comment, rating (1-5). El author se asigna automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar review",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}/reviews/{{reviewId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["projects", "{{projectId}}", "reviews", "{{reviewId}}"]
+						},
+						"description": "Elimina una review. Solo el autor de la review puede eliminarla. Responde con 204."
 					},
 					"response": []
 				}
@@ -343,7 +390,7 @@
 								"exec": [
 									"if (pm.response.code === 201) {",
 									"    const body = pm.response.json();",
-									"    pm.collectionVariables.set('messageId', body._id);",
+									"    pm.collectionVariables.set('messageId', body.id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -367,35 +414,21 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["users", "{{otherUserId}}", "messages"]
 						},
-						"description": "Envía un mensaje privado a otro alumno. El :id de la URL es el receptor."
+						"description": "Envía un mensaje privado a otro alumno. El :id de la URL es el receptor. Campos requeridos: subject, body. El sender se asigna automáticamente."
 					},
 					"response": []
 				},
 				{
-					"name": "Ver mensajes recibidos",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/users/me/messages",
-							"host": ["{{baseUrl}}"],
-							"path": ["users", "me", "messages"]
-						},
-						"description": "Devuelve los mensajes recibidos por el usuario autenticado, ordenados por fecha descendente. Los mensajes no leídos se marcan como leídos automáticamente."
-					},
-					"response": []
-				},
-				{
-					"name": "Eliminar mensaje enviado",
+					"name": "Eliminar mensaje",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/messages/{{messageId}}",
+							"raw": "{{baseUrl}}/users/{{userId}}/messages/{{messageId}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["messages", "{{messageId}}"]
+							"path": ["users", "{{userId}}", "messages", "{{messageId}}"]
 						},
-						"description": "Elimina un mensaje enviado por el usuario autenticado que aún no haya sido leído por el receptor. Responde con 204."
+						"description": "Elimina un mensaje no leído. Solo el receptor puede eliminar mensajes que aún no hayan sido leídos. Responde con 204."
 					},
 					"response": []
 				}
