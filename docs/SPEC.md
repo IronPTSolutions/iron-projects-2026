@@ -95,6 +95,8 @@ Se utiliza un **código único global** (variable de entorno `INVITE_CODE`) que 
 | US16 | Como alumno, quiero enviar un mensaje privado a otro alumno                                 | Must      |
 | US17 | Como alumno, quiero ver mi bandeja de entrada con los mensajes recibidos                    | Must      |
 | US18 | Como alumno, quiero leer y responder mensajes                                               | Must      |
+| US19 | Como alumno, quiero eliminar un mensaje que he enviado siempre que no haya sido leído       | Must      |
+| US20 | Como alumno, quiero que mis mensajes recibidos se marquen como leídos automáticamente al visitarlos | Must |
 
 ---
 
@@ -311,6 +313,8 @@ erDiagram
 | R9 | Las imágenes de proyectos se suben a Cloudinary (máx. 5 por proyecto)                    |
 | R10| El avatar del usuario se sube a Cloudinary                                               |
 | R11| Los mensajes marcados como leídos no pueden volver a estado no leído                     |
+| R12| Un alumno solo puede eliminar mensajes enviados por él mismo que aún no hayan sido leídos |
+| R13| Los mensajes recibidos se marcan como leídos automáticamente cuando el receptor los visita |
 
 ---
 
