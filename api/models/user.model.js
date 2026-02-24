@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema(
       // Función de transformación para limpiar el JSON de salida
       transform: function (doc, ret) {
         delete ret._id; // Elimina el _id nativo de MongoDB (se usa el virtual "id" en su lugar)
+        delete ret.password;
       },
     },
   },
@@ -81,13 +82,11 @@ userSchema.virtual("projects", {
   foreignField: "author",
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (this.isModified("password")) {
     // bcrypt.hash genera un hash seguro con salt de 10 rondas
     this.password = await bcrypt.hash(this.password, 10);
   }
-
-  next(); // Continúa con la operación de guardado
 });
 
 userSchema.methods.checkPassword = function (passwordToCheck) {

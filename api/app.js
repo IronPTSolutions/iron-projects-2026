@@ -6,7 +6,7 @@ import "./config/db.config.js";
 import router from "./config/routes.config.js";
 
 import { errorHandler } from "./middlewares/errors.middleware.js";
-
+import { clearBody } from "./middlewares/clearbody.middleware.js";
 import { checkAuth } from "./middlewares/auth.middleware.js";
 
 const app = express();
@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(clearBody);
 app.use(checkAuth);
 
 app.use("/api", router);
