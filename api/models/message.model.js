@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
 
+// Esquema del modelo de mensaje privado entre usuarios
 const messageSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: "User", // Referencia al usuario que envió el mensaje
       required: true,
     },
     receiver: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: "User", // Referencia al usuario destinatario del mensaje
       required: true,
     },
     subject: {
@@ -24,10 +25,11 @@ const messageSchema = new mongoose.Schema(
     },
     read: {
       type: Boolean,
-      default: false,
+      default: false, // Los mensajes nuevos empiezan como no leídos
     },
   },
   {
+    // Solo genera createdAt (los mensajes no se pueden editar)
     timestamps: { createdAt: true, updatedAt: false },
     versionKey: false,
     toJSON: {
@@ -39,6 +41,7 @@ const messageSchema = new mongoose.Schema(
   },
 );
 
+// Crea y exporta el modelo "Message"
 const Message = mongoose.model("Message", messageSchema);
 
 export default Message;
