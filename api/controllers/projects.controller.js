@@ -91,7 +91,7 @@ export async function update(req, res) {
  * Ruta: DELETE /api/projects/:id
  */
 export async function destroy(req, res) {
-  const project = await Project.findOne(req.params.id);
+  const project = await Project.findById(req.params.id);
 
   // Verifica que el usuario autenticado sea el autor del proyecto
   if (project.author.toString() !== req.session.user.id.toString()) {
