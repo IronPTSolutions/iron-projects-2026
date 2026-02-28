@@ -1,7 +1,9 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/navbar";
 import HomePage from "./pages/home-page";
 import LoginPage from "./pages/login-page";
+import RegisterPage from "./pages/register-page";
+import ProfilePage from "./pages/profile-page";
 
 /**
  * Layout para las páginas que requieren autenticación.
@@ -33,14 +35,8 @@ function App() {
   return (
     <Routes>
       {/* Ruta pública: login con layout centrado a pantalla completa */}
-      <Route
-        path="/login"
-        element={
-          <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
-            <LoginPage />
-          </div>
-        }
-      />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* Rutas protegidas: layout con navbar + contenido */}
       <Route
@@ -49,6 +45,8 @@ function App() {
           <AuthenticatedLayout>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AuthenticatedLayout>
         }

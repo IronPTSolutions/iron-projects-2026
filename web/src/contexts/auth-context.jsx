@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getProfile, login } from "../services/api-service";
+import { getProfile, login, logout } from "../services/api-service";
 
 // Contexto de autenticación con valor por defecto vacío
 const AuthContext = createContext({});
@@ -44,14 +44,25 @@ export function AuthContextProvider({ children }) {
     setUser(user);
   }
 
+  async function userLogout() {
+    await logout();
+    setUser(null);
+  }
+
   // Mientras user es null y NO estamos en /login, no renderizamos nada.
   // Esto evita que se muestre brevemente contenido protegido antes de redirigir.
-  if (user === null && location.pathname !== "/login") {
+  if (
+    user === null &&
+    location.pathname !== "/login" &&
+    location.pathname !== "/register"
+  ) {
     return <></>;
   }
 
   return (
-    <AuthContext.Provider value={{ user, userLogin }}>
+    <AuthContext.Provider
+      value={{ user, userLogin, userLogout, reloadUser: setUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

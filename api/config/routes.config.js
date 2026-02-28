@@ -4,6 +4,8 @@ import createHttpError from "http-errors";
 import * as users from "../controllers/users.controller.js";
 import * as projects from "../controllers/projects.controller.js";
 
+import upload from "../config/multer.config.js"; // Configuración de Multer para manejo de archivos
+
 // Crea una instancia del enrutador de Express
 const router = Router();
 
@@ -13,7 +15,7 @@ router.post("/sessions", users.login); // Inicio de sesión (crea cookie de sesi
 router.delete("/sessions", users.logout); // Cierre de sesión (elimina la sesión)
 
 // --- Rutas de usuarios ---
-router.patch("/users/me", users.update); // Actualizar perfil del usuario autenticado
+router.patch("/users/me", upload.single("avatar"), users.update); // Actualizar perfil del usuario autenticado
 router.get("/users/:id", users.detail); // Obtener perfil de un usuario (acepta "me" como id)
 
 // --- Rutas de proyectos ---

@@ -31,7 +31,14 @@ export async function create(req, res) {
  */
 export async function update(req, res) {
   // Asigna los campos del body al usuario de la sesión actual
+  delete req.body.email;
+
   Object.assign(req.session.user, req.body);
+
+  if (req.file) {
+    req.session.user.avatarUrl = req.file.path; // La URL del avatar se obtiene del path del archivo subido por Multer
+  }
+
   // Guarda los cambios en la base de datos
   await req.session.user.save();
   res.json(req.session.user);

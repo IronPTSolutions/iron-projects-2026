@@ -39,7 +39,7 @@ export async function list(req, res) {
   }
 
   // Busca los proyectos que coincidan con los criterios
-  const projects = await Project.find(criteria);
+  const projects = await Project.find(criteria).populate("author");
 
   res.json(projects);
 }

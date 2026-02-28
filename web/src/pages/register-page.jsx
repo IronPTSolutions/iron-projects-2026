@@ -1,45 +1,39 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/auth-context";
+import { register as registerApi } from "../services/api-service";
 
 /**
- * Página de Login.
+ * Página de Registro.
  *
  * Formulario con validación client-side (react-hook-form) y feedback visual:
+ * - Campo de nombre.
  * - Campo de email con validación de formato.
  * - Campo de password con toggle de visibilidad.
+ * - Campo de código de invitación.
  * - Spinner de carga durante el submit.
- * - Banner de error si las credenciales son incorrectas.
+ * - Banner de error si el registro falla.
  *
- * Al autenticarse con éxito, navega a la página principal ("/").
+ * Al registrarse con éxito, navega a la página de login ("/login").
  */
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
-  const { userLogin } = useAuth(); // Función de login del contexto de autenticación
-  const [serverError, setServerError] = useState(null); // Error devuelto por el servidor
-  const [showPassword, setShowPassword] = useState(false); // Toggle visibilidad password
-
-  // react-hook-form: register registra inputs, handleSubmit gestiona el envío,
-  // errors contiene los errores de validación e isSubmitting indica si está enviando.
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm();
+  const [serverError, setServerError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  /**
-   * Handler del formulario.
-   * Llama a userLogin del contexto; si falla, muestra el error del servidor.
-   */
-  const onSubmit = async (data) => {
+  async function onSubmit(data) {
     try {
-      await userLogin(data.email, data.password);
-      navigate("/"); // Login exitoso → ir al home
+      await registerApi(data);
+      navigate("/login");
     } catch (err) {
-      setServerError("Wrong credentials");
+      setServerError(err.response?.data?.message || "Ops! Unknown Error");
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
@@ -57,16 +51,14 @@ export default function LoginPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1.5}
-                d="M12 11c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm-6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm12-5H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2z"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
               />
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">
-            Welcome back
+            Create an account
           </h1>
-          <p className="mt-2 text-slate-400">
-            Sign in to your account to continue
-          </p>
+          <p className="mt-2 text-slate-400">Sign up to get started</p>
         </div>
 
         {/* Card */}
@@ -92,6 +84,51 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-slate-300"
+              >
+                Full name
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                  <svg
+                    className="h-5 w-5 text-slate-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  className={`block w-full rounded-xl border bg-slate-900/50 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-offset-0 ${
+                    errors.name
+                      ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20"
+                      : "border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20"
+                  }`}
+                  {...register("name", {
+                    required: "Name is required",
+                  })}
+                />
+              </div>
+              {errors.name && (
+                <p className="text-xs text-red-400 mt-1">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
             {/* Email Field */}
             <div className="space-y-2">
               <label
@@ -227,6 +264,51 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Invite Code Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="inviteCode"
+                className="block text-sm font-medium text-slate-300"
+              >
+                Invite code
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                  <svg
+                    className="h-5 w-5 text-slate-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  id="inviteCode"
+                  type="text"
+                  placeholder="Enter your invite code"
+                  className={`block w-full rounded-xl border bg-slate-900/50 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-offset-0 ${
+                    errors.inviteCode
+                      ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20"
+                      : "border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20"
+                  }`}
+                  {...register("inviteCode", {
+                    required: "Invite Code is required",
+                  })}
+                />
+              </div>
+              {errors.inviteCode && (
+                <p className="text-xs text-red-400 mt-1">
+                  {errors.inviteCode.message}
+                </p>
+              )}
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -254,10 +336,10 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     />
                   </svg>
-                  Signing in…
+                  Creating account…
                 </span>
               ) : (
-                "Sign in"
+                "Create account"
               )}
             </button>
           </form>
@@ -265,12 +347,12 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-sm text-slate-500">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/register"
+            to="/login"
             className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
           >
-            Create one
+            Sign in
           </Link>
         </p>
       </div>

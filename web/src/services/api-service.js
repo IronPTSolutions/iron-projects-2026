@@ -50,6 +50,14 @@ export function updateProfile(data) {
   return http.patch("/users/me", data);
 }
 
+/** Actualiza el perfil del usuario autenticado. */
+export function updateAvatar(file) {
+  const data = new FormData();
+  data.append("avatar", file);
+
+  return http.patch("/users/me", data);
+}
+
 /** Obtiene un usuario por su ID. */
 export function getUser(id) {
   return http.get(`/users/${id}`);

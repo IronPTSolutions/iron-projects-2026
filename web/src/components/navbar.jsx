@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
-import { logout } from "../services/api-service";
 
 /**
  * Barra de navegación principal.
@@ -17,12 +16,12 @@ import { logout } from "../services/api-service";
  */
 export default function Navbar() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Datos del usuario autenticado
+  const { user, userLogout } = useAuth(); // Datos del usuario autenticado
   const [menuOpen, setMenuOpen] = useState(false); // Controla el dropdown / menú mobile
 
   /** Cierra la sesión en el servidor y redirige al login. */
   const handleLogout = async () => {
-    await logout();
+    await userLogout();
     navigate("/login");
   };
 
@@ -53,20 +52,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
-            <Link
-              to="/"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              Home
-            </Link>
-            <Link
-              to="/projects"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              Projects
-            </Link>
-          </div>
+          <div className="hidden md:flex items-center gap-1"></div>
 
           {/* Right side: User menu */}
           <div className="flex items-center gap-3">
