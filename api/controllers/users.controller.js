@@ -148,6 +148,7 @@ export async function login(req, res) {
   res.cookie("sessionId", session.id, {
     httpOnly: true,
     secure: process.env.COOKIE_SECURE === "true",
+    sameSite: "none",
   });
 
   res.json(user);

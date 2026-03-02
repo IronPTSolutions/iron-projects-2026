@@ -1,6 +1,7 @@
 import createHttpError from "http-errors";
 import Review from "../models/review.model.js";
 import Project from "../models/project.model.js";
+import User from "../models/user.model.js";
 
 /**
  * Crea un nuevo proyecto.
@@ -35,7 +36,10 @@ export async function list(req, res) {
   }
 
   if (req.query.author) {
-    criteria.author = req.query.author;
+    // carmen
+    const users = await User.find({ email: new RegExp(req.query.author, "i") });
+
+    criteria.author = { $in: users.map((u) => u.id) };
   }
 
   // Busca los proyectos que coincidan con los criterios
@@ -50,10 +54,12 @@ export async function list(req, res) {
  */
 export async function detail(req, res) {
   // Busca el proyecto y popula las reviews con los datos del autor de cada una
-  const project = await Project.findById(req.params.id).populate({
-    path: "reviews",
-    populate: "author", // Populate anidado: obtiene los datos del autor de cada review
-  });
+  const project = await Project.findById(req.params.id)
+    .populate("author")
+    .populate({
+      path: "reviews",
+      populate: "author", // Populate anidado: obtiene los datos del autor de cada review
+    });
 
   if (!project) {
     throw createHttpError(404, "Project not found");

@@ -317,28 +317,241 @@ const upload = multer({ storage });
 
 ---
 
+### 14. Filtros de proyectos (`src/components/projects-filters.jsx`)
+
+Componente de filtrado integrado en la página Home:
+
+- **Filtro por módulo** — select con opciones 1, 2, 3 o "All".
+- **Filtro por promoción** — select con las promociones disponibles.
+- **Búsqueda por autor** — input de texto con icono de lupa.
+- **Botón Clear** — resetea todos los filtros a vacío.
+
+Los filtros se gestionan como estado en `HomePage` y se pasan como props:
+
+```jsx
+const [filters, setFilters] = useState({ module: "", promotion: "", author: "" });
+<ProjectsFilters filters={filters} setFilters={setFilters} />
+```
+
+---
+
+### 15. Skeleton de carga (`src/components/project-card-skeleton.jsx`)
+
+Componente placeholder con `animate-pulse` que replica la estructura de `ProjectCard`. Se muestra mientras los proyectos están cargando, creando un efecto de carga suave:
+
+```jsx
+{loading
+  ? Array.from({ length: 6 }).map((_, i) => <ProjectCardSkeleton key={i} />)
+  : projects.map((project) => <ProjectCard ... />)}
+```
+
+---
+
+### 16. Hook `useProjects` actualizado con filtros y debounce
+
+El hook ahora acepta un objeto `filters` y reacciona a cambios en él:
+
+- Si el filtro `author` tiene valor, aplica un **debounce de 500 ms** para no bombardear la API mientras el usuario escribe.
+- Al cambiar cualquier filtro, resetea `projects` a `null` (muestra skeletons) y lanza la petición con los filtros como query params.
+- Limpia el timeout en el cleanup del efecto.
+
+```js
+export default function useProjects(filters) {
+  const [projects, setProjects] = useState(null);
+
+  useEffect(() => {
+    const timer = filters.author ? 500 : 0;
+    const timeout = window.setTimeout(async () => {
+      setProjects(null);
+      const projects = await listProjects(filters);
+      setProjects(projects);
+    }, timer);
+    return () => window.clearTimeout(timeout);
+  }, [filters]);
+
+  return { projects, loading: projects === null };
+}
+```
+
+---
+
+### 17. Página de detalle de proyecto (`src/pages/project-page.jsx`)
+
+Página completa para ver un proyecto individual (ruta `/projects/:id`):
+
+- **Hero section** — título, badges de módulo y promoción, rating medio con estrellas.
+- **Galería de imágenes** — muestra la primera imagen del proyecto.
+- **Descripción** del proyecto.
+- **Botones de acción** — enlaces a GitHub y Live URL.
+- **Sección de autor** — usa el componente `ProjectAuthorCard`.
+- **Sección de reviews** — lista todas las reviews con `ProjectReview`.
+- **Loading state** — skeleton animado mientras carga.
+
+Usa el custom hook `useProject()` que obtiene un proyecto por su ID desde la URL.
+
+---
+
+### 18. Hook `useProject` (`src/hooks/use-project.js`)
+
+Similar a `useProjects` pero para un único proyecto:
+
+- Extrae el `id` de los params de la URL con `useParams()`.
+- Hace `GET /api/projects/:id` vía `getProject(id)`.
+- Devuelve `{ project, loading }`.
+
+```js
+export default function useProject() {
+  const [project, setProject] = useState(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    async function fetch() {
+      const project = await getProject(id);
+      setProject(project);
+    }
+    fetch();
+  }, [id]);
+
+  return { project, loading: project === null };
+}
+```
+
+---
+
+### 19. Componente `ProjectAuthorCard` (`src/components/project-author-card.jsx`)
+
+Tarjeta reutilizable que muestra la información del autor de un proyecto:
+
+- Avatar, nombre con enlace al perfil (`/users/:id`) y email.
+- Badges de ubicación y promoción.
+- Bio del autor.
+- Tags de idiomas/tecnologías.
+- Enlaces sociales a GitHub y LinkedIn con iconos.
+
+---
+
+### 20. Componente `ProjectReview` (`src/components/project-review.jsx`)
+
+Tarjeta de review individual que muestra:
+
+- Avatar y nombre del autor (con enlace a su perfil) y su promoción.
+- Rating con estrellas (componente `StarRating`).
+- Texto del comentario.
+- Fecha de creación formateada.
+
+---
+
+### 21. Componente `StarRating` (`src/components/start-rating.jsx`)
+
+Componente de estrellas visual que recibe un `rating` (1-5) y renderiza 5 estrellas SVG, coloreando en ámbar las que corresponden a la puntuación:
+
+```jsx
+{[1, 2, 3, 4, 5].map((star) => (
+  <svg className={`w-4 h-4 ${star <= rating ? "text-amber-400" : "text-slate-600"}`} ...>
+```
+
+---
+
+### 22. Página de usuario (`src/pages/user-page.jsx`)
+
+Perfil público de cualquier usuario (ruta `/users/:id`):
+
+- **Profile card** — avatar grande (rounded-2xl), nombre, email, ubicación, bio, idiomas, enlaces sociales (GitHub, LinkedIn) y fecha de registro.
+- **Sección de proyectos** — grid con los proyectos del usuario usando `ProjectCard`.
+- **Loading state** — skeleton animado.
+
+Usa el custom hook `useUser()`.
+
+---
+
+### 23. Hook `useUser` (`src/hooks/user-user.js`)
+
+Hook para obtener un usuario por ID:
+
+- Extrae el `id` de `useParams()`.
+- Hace `GET /api/users/:id` vía `getUser(id)`.
+- Devuelve `{ user, loading }`.
+
+---
+
+### 24. Nuevas rutas en `App.jsx`
+
+Se añadieron dos nuevas rutas protegidas:
+
+```jsx
+<Route path="/projects/:id" element={<ProjectPage />} />
+<Route path="/users/:id" element={<UserPage />} />
+```
+
+---
+
+### 25. Nuevos endpoints en `api-service.js`
+
+Se ampliaron las funciones del servicio HTTP:
+
+- `getProject(id)` — `GET /api/projects/:id` (detalle de proyecto).
+- `getUser(id)` — `GET /api/users/:id` (perfil público de usuario).
+- `createReview(projectId, review)` — `POST /api/projects/:id/reviews`.
+- `deleteReview(projectId, reviewId)` — `DELETE /api/projects/:id/reviews/:id`.
+- `sendMessage(userId, message)` — `POST /api/users/:id/messages`.
+- `deleteMessage(userId, messageId)` — `DELETE /api/users/:id/messages/:id`.
+- `listProjects(filters)` — ahora acepta filtros como query params.
+
+El `baseURL` se configura dinámicamente según el host:
+
+```js
+baseURL: location.host === "iron-projects.netlify.app"
+  ? "https://api-ancient-paper-8537.fly.dev/api"
+  : "http://localhost:3000/api",
+```
+
+---
+
+### 26. Despliegue en Netlify (`public/_redirects`)
+
+Para que React Router funcione correctamente en Netlify (SPA con client-side routing), añadimos el fichero `public/_redirects`:
+
+```
+/* /index.html 200
+```
+
+Esta regla redirige todas las peticiones al `index.html`, permitiendo que React Router gestione las rutas en el navegador.
+
+---
+
 ## Estructura del proyecto
 
 ```
+public/
+├── _redirects                    # Netlify SPA redirect rule
 src/
-├── main.jsx                  # Entry point (BrowserRouter + AuthContext)
-├── App.jsx                   # Rutas y layouts
-├── index.css                 # Tailwind import
+├── main.jsx                      # Entry point (BrowserRouter + AuthContext)
+├── App.jsx                       # Rutas y layouts
+├── index.css                     # Tailwind import
 ├── components/
-│   ├── navbar.jsx            # Barra de navegación con menú de usuario
-│   ├── project-card.jsx      # Tarjeta de proyecto reutilizable
-│   └── profile-projects.jsx  # Proyectos del perfil por módulo
+│   ├── navbar.jsx                # Barra de navegación con menú de usuario
+│   ├── project-card.jsx          # Tarjeta de proyecto reutilizable
+│   ├── project-card-skeleton.jsx # Skeleton loading para ProjectCard
+│   ├── project-author-card.jsx   # Tarjeta de autor en detalle de proyecto
+│   ├── project-review.jsx        # Tarjeta de review individual
+│   ├── projects-filters.jsx      # Filtros de módulo, promoción y autor
+│   ├── start-rating.jsx          # Estrellas de valoración (1-5)
+│   └── profile-projects.jsx      # Proyectos del perfil por módulo
 ├── contexts/
-│   └── auth-context.jsx      # Contexto de autenticación (sesión)
+│   └── auth-context.jsx          # Contexto de autenticación (sesión)
 ├── hooks/
-│   └── use-projects.js       # Hook para obtener lista de proyectos
+│   ├── use-projects.js           # Hook para listar proyectos (con filtros y debounce)
+│   ├── use-project.js            # Hook para obtener un proyecto por ID
+│   └── user-user.js              # Hook para obtener un usuario por ID
 ├── pages/
-│   ├── home-page.jsx         # Página principal (grid de proyectos)
-│   ├── login-page.jsx        # Formulario de login
-│   ├── register-page.jsx     # Formulario de registro
-│   └── profile-page.jsx      # Perfil del usuario (editar + proyectos)
+│   ├── home-page.jsx             # Página principal (filtros + grid de proyectos)
+│   ├── login-page.jsx            # Formulario de login
+│   ├── register-page.jsx         # Formulario de registro
+│   ├── profile-page.jsx          # Perfil del usuario (editar + proyectos)
+│   ├── project-page.jsx          # Detalle de proyecto (hero + autor + reviews)
+│   └── user-page.jsx             # Perfil público de usuario
 └── services/
-    └── api-service.js        # Cliente HTTP (Axios)
+    └── api-service.js            # Cliente HTTP (Axios) con baseURL dinámica
 ```
 
 ---
