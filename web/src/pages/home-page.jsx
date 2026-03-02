@@ -1,23 +1,33 @@
+import { useState } from "react";
 import ProjectCard from "../components/project-card";
-import { useAuth } from "../contexts/auth-context";
+import ProjectCardSkeleton from "../components/project-card-skeleton";
 import useProjects from "../hooks/use-projects";
+import { ProjectsFilters } from "../components/projects-filters";
 
 /** Página principal — se muestra tras autenticarse correctamente. */
 export default function HomePage() {
-  // Obtiene los datos del usuario autenticado desde el contexto
-  const { user } = useAuth();
+  const [filters, setFilters] = useState({
+    module: "",
+    promotion: "",
+    author: "",
+  });
 
-  const { projects, loading } = useProjects();
-
-  if (loading) {
-    return <></>;
-  }
+  const { projects, loading } = useProjects(filters);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-      {projects.map((project) => (
-        <ProjectCard project={project} key={project.id} />
-      ))}
+    <div>
+      {/* Filters */}
+      <ProjectsFilters filters={filters} setFilters={setFilters} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))
+          : projects.map((project) => (
+              <ProjectCard project={project} key={project.id} />
+            ))}
+      </div>
     </div>
   );
 }

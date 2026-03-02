@@ -7,7 +7,10 @@ import axios from "axios";
  * - withCredentials: envía cookies de sesión en cada petición (necesario para auth).
  */
 const http = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL:
+    location.host === "iron-projects.netlify.app"
+      ? "https://api-ancient-paper-8537.fly.dev/api"
+      : "http://localhost:3000/api",
   withCredentials: true,
 });
 

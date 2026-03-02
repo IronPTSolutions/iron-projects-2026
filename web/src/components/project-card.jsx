@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 /**
  * Tarjeta de proyecto reutilizable.
  *
@@ -15,7 +17,7 @@ export default function ProjectCard({ project }) {
       {/* Header: title + module badge */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <h3 className="text-lg font-semibold text-white truncate">
-          {project.title}
+          <Link to={`/projects/${project.id}`}>{project.title}</Link>
         </h3>
         {project.module && (
           <span className="shrink-0 rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 text-xs font-medium text-indigo-400">

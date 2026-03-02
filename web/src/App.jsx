@@ -4,6 +4,8 @@ import HomePage from "./pages/home-page";
 import LoginPage from "./pages/login-page";
 import RegisterPage from "./pages/register-page";
 import ProfilePage from "./pages/profile-page";
+import ProjectPage from "./pages/project-page";
+import UserPage from "./pages/user-page";
 
 /**
  * Layout para las páginas que requieren autenticación.
@@ -45,7 +47,9 @@ function App() {
           <AuthenticatedLayout>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/projects/:id" element={<ProjectPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/users/:id" element={<UserPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AuthenticatedLayout>

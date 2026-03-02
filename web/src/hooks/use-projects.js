@@ -9,17 +9,24 @@ import { listProjects } from "../services/api-service";
  *   - projects: array de proyectos (null mientras carga).
  *   - loading: true mientras la petición no ha terminado.
  */
-export default function useProjects() {
+export default function useProjects(filters) {
   const [projects, setProjects] = useState(null);
 
   useEffect(() => {
-    async function fetch() {
-      const projects = await listProjects();
-      setProjects(projects);
-    }
+    const timer = filters.author ? 500 : 0;
 
-    fetch();
-  }, []);
+    const timeout = window.setTimeout(async () => {
+      setProjects(null);
+
+      const projects = await listProjects(filters);
+
+      setProjects(projects);
+    }, timer);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [filters]);
 
   return { projects, loading: projects === null };
 }
