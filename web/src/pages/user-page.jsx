@@ -2,6 +2,17 @@ import { Link } from "react-router-dom";
 import ProjectCard from "../components/project-card";
 import useUser from "../hooks/user-user";
 
+/**
+ * Página de perfil público de un usuario (ruta `/users/:id`).
+ *
+ * Muestra:
+ * - Profile card: avatar, nombre, email, ubicación, bio, idiomas, enlaces sociales
+ *   (GitHub, LinkedIn), botón de enviar mensaje y fecha de registro.
+ * - Sección de proyectos: grid con los proyectos del usuario usando ProjectCard.
+ *
+ * Usa el hook `useUser()` que obtiene el usuario por ID de la URL.
+ * Mientras carga muestra un skeleton animado.
+ */
 export default function UserPage() {
   const { user, loading } = useUser();
 
@@ -159,16 +170,37 @@ export default function UserPage() {
               )}
             </div>
 
-            {/* Member since */}
-            {user.createdAt && (
-              <p className="text-xs text-slate-500">
-                Member since{" "}
-                {new Date(user.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                })}
-              </p>
-            )}
+            {/* Send message + Member since */}
+            <div className="flex items-center gap-4">
+              <Link
+                to={`/chat/${user.id}`}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-400 transition-all duration-200 hover:bg-indigo-500/20 hover:border-indigo-500/40"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+                Enviar mensaje
+              </Link>
+              {user.createdAt && (
+                <p className="text-xs text-slate-500">
+                  Member since{" "}
+                  {new Date(user.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

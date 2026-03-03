@@ -55,7 +55,22 @@ Centralized in `api/middlewares/errors.middleware.js`:
 - Everything else → 500
 
 ### Frontend
-`web/src/services/api-service.js` is the Axios HTTP client layer with a response interceptor that unwraps `response.data`. The App component is currently a simple API tester UI. No routing library or state management yet.
+
+**Provider hierarchy** (in `main.jsx`): `StrictMode` → `BrowserRouter` → `AuthContextProvider` → `App`
+
+**Routing** (`App.jsx`): React Router v7. Public routes (`/login`, `/register`) render without navbar. All other routes use `AuthenticatedLayout` (navbar + centered content). Unknown paths redirect to `/`.
+
+**Auth flow** (`contexts/auth-context.jsx`): `AuthContextProvider` calls `GET /api/users/me` on mount. If no valid session, redirects to `/login`. Exposes `user`, `userLogin`, `userLogout`, `reloadUser` via `useAuth()` hook. Renders nothing while session check is pending (prevents flash of protected content).
+
+**API client** (`services/api-service.js`): Axios instance with `withCredentials: true`. Response interceptor unwraps `response.data`. Base URL switches between localhost:3000 and production based on `location.host`. Functions mirror API endpoints: `login`, `logout`, `register`, `getProfile`, `listProjects`, `getProject`, `createProject`, `createReview`, etc.
+
+**Custom hooks pattern**: Data-fetching hooks in `src/hooks/` return `{ data, loading }` objects. `loading` is derived from `data === null`. Examples: `useProjects(filters)`, `useProject()` (reads `id` from route params), `useUser()`.
+
+**Styling**: Tailwind CSS v4 via `@tailwindcss/vite` plugin. Dark slate gradient theme.
+
+**Forms**: `react-hook-form` for form state and validation.
+
+**ESLint rule**: `no-unused-vars` ignores variables starting with uppercase or underscore (`varsIgnorePattern: '^[A-Z_]'`).
 
 ## Key Environment Variables (API)
 - `MONGODB_URI` — MongoDB connection string

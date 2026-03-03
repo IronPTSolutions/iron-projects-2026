@@ -1,3 +1,11 @@
+/**
+ * Componente visual de estrellas de valoración (solo lectura).
+ *
+ * Renderiza 5 estrellas SVG, coloreando en ámbar (amber-400) las que
+ * corresponden al rating recibido y en gris (slate-600) las restantes.
+ *
+ * @param {{ rating: number }} props - Puntuación de 1 a 5.
+ */
 export default function StarRating({ rating }) {
   return (
     <div className="flex items-center gap-0.5">

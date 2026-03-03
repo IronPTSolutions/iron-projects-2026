@@ -112,6 +112,11 @@ export function sendMessage(userId, message) {
   return http.post(`/users/${userId}/messages`, message);
 }
 
+/** Marca un mensaje como leído. */
+export function markMessageAsRead(userId, messageId) {
+  return http.patch(`/users/${userId}/messages/${messageId}`);
+}
+
 /** Elimina un mensaje de una conversación. */
 export function deleteMessage(userId, messageId) {
   return http.delete(`/users/${userId}/messages/${messageId}`);

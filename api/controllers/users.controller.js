@@ -67,12 +67,11 @@ export async function createMessage(req, res) {
  * Ruta: DELETE /api/users/:id/messages/:messageId
  */
 export async function destroyMessage(req, res) {
-  // Busca el mensaje verificando que pertenece al destinatario y no ha sido leído
-  const message = Message.findOne({
+  // Busca el mensaje verificando que el sender es el usuario autenticado y no ha sido leído
+  const message = await Message.findOne({
     _id: req.params.messageId,
-    receiver: req.params.id,
+    sender: req.session.user.id,
     read: false,
-    author: req.session.user.id,
   });
 
   if (!message) {
@@ -84,6 +83,28 @@ export async function destroyMessage(req, res) {
 
   // Responde con 204 (sin contenido) indicando que se eliminó correctamente
   res.status(204).send();
+}
+
+/**
+ * Marca un mensaje como leído.
+ * Solo el receptor puede marcar sus mensajes recibidos como leídos.
+ * Ruta: PATCH /api/users/:id/messages/:messageId
+ */
+export async function markMessageAsRead(req, res) {
+  const message = await Message.findOne({
+    _id: req.params.messageId,
+    receiver: req.session.user.id,
+    read: false,
+  });
+
+  if (!message) {
+    throw createHttpError(404, "Message not found");
+  }
+
+  message.read = true;
+  await message.save();
+
+  res.json(message);
 }
 
 /**
@@ -99,8 +120,17 @@ export async function detail(req, res) {
   let userPromise = User.findById(id).populate("projects");
 
   // Si es el propio perfil, también popula los mensajes enviados y recibidos
+  // con datos del sender/receiver para construir la lista de conversaciones
   if (id === req.session.user.id) {
-    userPromise = userPromise.populate("sentMessages receivedMessages");
+    userPromise = userPromise
+      .populate({
+        path: "sentMessages",
+        populate: { path: "receiver", select: "name avatarUrl" },
+      })
+      .populate({
+        path: "receivedMessages",
+        populate: { path: "sender", select: "name avatarUrl" },
+      });
   }
 
   const user = await userPromise;
@@ -148,7 +178,7 @@ export async function login(req, res) {
   res.cookie("sessionId", session.id, {
     httpOnly: true,
     secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "none",
+    sameSite: process.env.COOKIE_SECURE === "true" ? "none" : undefined,
   });
 
   res.json(user);

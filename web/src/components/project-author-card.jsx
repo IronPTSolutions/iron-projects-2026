@@ -1,5 +1,18 @@
 import { Link } from "react-router-dom";
 
+/**
+ * Tarjeta reutilizable con la información del autor de un proyecto.
+ *
+ * Muestra:
+ * - Avatar del autor con borde redondeado.
+ * - Nombre (enlace a su perfil público /users/:id) y email.
+ * - Badges de ubicación y promoción.
+ * - Bio del autor.
+ * - Tags de idiomas/tecnologías.
+ * - Iconos con enlaces a GitHub y LinkedIn.
+ *
+ * @param {{ author: object }} props - Objeto autor con avatarUrl, name, email, etc.
+ */
 export default function ProjectAuthorCard({ author }) {
   return (
     <div className="rounded-2xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-xl p-6 shadow-lg shadow-black/10">

@@ -6,6 +6,7 @@ import RegisterPage from "./pages/register-page";
 import ProfilePage from "./pages/profile-page";
 import ProjectPage from "./pages/project-page";
 import UserPage from "./pages/user-page";
+import ChatPage from "./pages/chat-page";
 
 /**
  * Layout para las páginas que requieren autenticación.
@@ -50,6 +51,8 @@ function App() {
               <Route path="/projects/:id" element={<ProjectPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/users/:id" element={<UserPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/chat/:userId" element={<ChatPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AuthenticatedLayout>

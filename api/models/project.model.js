@@ -60,6 +60,7 @@ const projectSchema = new mongoose.Schema(
 projectSchema.virtual("reviews", {
   ref: "Review",
   localField: "_id",
+  options: { sort: { createdAt: -1 } },
   foreignField: "project",
 });
 

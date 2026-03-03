@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
+import { getProfile } from "../services/api-service";
 
 /**
  * Barra de navegación principal.
@@ -18,6 +19,28 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { user, userLogout } = useAuth(); // Datos del usuario autenticado
   const [menuOpen, setMenuOpen] = useState(false); // Controla el dropdown / menú mobile
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Polling para contar mensajes no leídos
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchUnread() {
+      try {
+        const profile = await getProfile();
+        const count = (profile.receivedMessages || []).filter(
+          (m) => !m.read,
+        ).length;
+        setUnreadCount(count);
+      } catch (_err) {
+        // Silenciar errores
+      }
+    }
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   /** Cierra la sesión en el servidor y redirige al login. */
   const handleLogout = async () => {
@@ -54,8 +77,36 @@ export default function Navbar() {
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1"></div>
 
-          {/* Right side: User menu */}
+          {/* Right side: Chat + User menu */}
           <div className="flex items-center gap-3">
+            {user && (
+              <>
+                {/* Chat icon with unread badge */}
+                <Link
+                  to="/chat"
+                  className="relative flex items-center justify-center h-9 w-9 rounded-xl border border-slate-700/50 bg-slate-800/50 text-slate-400 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white px-1">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
             {user && (
               <div className="relative">
                 <button

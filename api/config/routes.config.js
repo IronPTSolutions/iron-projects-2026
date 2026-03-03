@@ -31,6 +31,7 @@ router.delete("/projects/:id/reviews/:reviewId", projects.deleteReview); // Elim
 
 // --- Rutas de mensajes (anidadas bajo usuarios) ---
 router.post("/users/:id/messages", users.createMessage); // Enviar un mensaje a un usuario
+router.patch("/users/:id/messages/:messageId", users.markMessageAsRead); // Marcar un mensaje como leído
 router.delete("/users/:id/messages/:messageId", users.destroyMessage); // Eliminar un mensaje no leído
 
 // Middleware catch-all: cualquier ruta no definida devuelve un error 404

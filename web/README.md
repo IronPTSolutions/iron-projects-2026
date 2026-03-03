@@ -519,6 +519,136 @@ Esta regla redirige todas las peticiones al `index.html`, permitiendo que React 
 
 ---
 
+### 27. Formulario de review (`src/components/review-form.jsx`)
+
+Componente para añadir reviews a los proyectos:
+
+- Botón toggle "Write Review" / "Cancel" para mostrar/ocultar el formulario.
+- **Selector de estrellas interactivo** (1-5) con efecto hover — cada estrella cambia de color al pasar el ratón (`onMouseEnter`/`onMouseLeave`).
+- Al seleccionar rating > 0, aparece un textarea para el comentario.
+- Se envía pulsando **Enter** dentro del textarea (`onKeyUp`).
+- Tras enviar, resetea el rating a 0 y recarga el proyecto con `reloadProject()`.
+
+```jsx
+const [rating, setRating] = useState(0);
+const [hoverRating, setHoverRating] = useState(0);
+
+// Estrellas con color dinámico según hover o selección
+{[1, 2, 3, 4, 5].map((star) => (
+  <button
+    onMouseEnter={() => setHoverRating(star)}
+    onMouseLeave={() => setHoverRating(0)}
+    onClick={() => setRating(star)}
+  >
+    <svg className={star <= (hoverRating || rating) ? "text-amber-400" : "text-slate-600"} />
+  </button>
+))}
+```
+
+---
+
+### 28. Sistema de mensajería — Hook `useMessages` (`src/hooks/use-messages.js`)
+
+Hook que gestiona las conversaciones del usuario autenticado:
+
+1. Obtiene los mensajes enviados y recibidos vía `getProfile()`.
+2. **Agrupa los mensajes por "el otro usuario"** usando un objeto `grouped`.
+3. Ordena los mensajes dentro de cada conversación por fecha ascendente.
+4. Ordena las conversaciones por último mensaje (más reciente primero).
+5. Calcula el contador de mensajes no leídos (`unread`) por conversación.
+6. **Polling cada 5 segundos** (`setInterval`) para actualizar en tiempo real.
+7. Función `markAsRead` que marca todos los mensajes no leídos de una conversación.
+
+```js
+const grouped = {};
+for (const msg of allMessages) {
+  const isSender = (msg.sender?.id || msg.sender) === myId;
+  const otherUser = isSender ? msg.receiver : msg.sender;
+  // Agrupa por ID del otro usuario
+  grouped[otherId].messages.push({ ...msg, isMine: isSender });
+}
+```
+
+Devuelve: `{ conversations, unreadCount, loading, refresh, markAsRead }`.
+
+---
+
+### 29. Página de chat (`src/pages/chat-page.jsx`)
+
+Página con layout de dos paneles para la mensajería:
+
+- **Panel izquierdo** — `ConversationList`: lista de conversaciones con avatar, nombre, preview del último mensaje y badge de no leídos.
+- **Panel derecho** — `ChatView`: mensajes de la conversación activa con input para enviar.
+- Al seleccionar una conversación, navega a `/chat/:userId` y marca los mensajes como leídos.
+- Usa `useMemo` para encontrar la conversación activa sin recalcular en cada render.
+- Layout full-height con márgenes negativos para ocupar toda la pantalla.
+
+```jsx
+<Route path="/chat" element={<ChatPage />} />
+<Route path="/chat/:userId" element={<ChatPage />} />
+```
+
+---
+
+### 30. Componentes del chat
+
+**`ConversationItem`** — Item individual de la lista de conversaciones:
+- Avatar (imagen o inicial), nombre, timestamp relativo ("hace 5m", "ayer").
+- Preview del último mensaje truncado a 50 caracteres.
+- Badge indigo con mensajes no leídos.
+- Borde izquierdo indigo cuando está seleccionado.
+
+**`ChatView`** — Vista del chat activo:
+- Header con avatar y nombre del otro usuario (enlace al perfil).
+- Lista de mensajes con auto-scroll al último.
+- Input con envío al pulsar Enter.
+- Estado vacío si no hay conversación seleccionada.
+
+**`MessageBubble`** — Burbuja de mensaje individual:
+- Mensajes propios alineados a la derecha (fondo indigo), ajenos a la izquierda (fondo slate).
+- Botón de eliminar visible al hover (solo mensajes propios no leídos).
+- Popover de confirmación antes de eliminar.
+
+**`ConversationList`** — Wrapper que renderiza la lista de `ConversationItem` con estado vacío.
+
+---
+
+### 31. Navbar — icono de chat con badge de no leídos
+
+Se añadió al navbar un **icono de chat** con badge indicador de mensajes no leídos:
+
+- Icono de burbuja de chat con enlace a `/chat`.
+- **Polling cada 15 segundos** para contar mensajes no leídos vía `getProfile()`.
+- Badge circular con el contador (solo visible si > 0).
+
+```jsx
+useEffect(() => {
+  async function fetchUnread() {
+    const profile = await getProfile();
+    const count = profile.receivedMessages.filter(m => !m.read).length;
+    setUnreadCount(count);
+  }
+  fetchUnread();
+  const interval = setInterval(fetchUnread, 15000);
+  return () => clearInterval(interval);
+}, [user]);
+```
+
+---
+
+### 32. Comentarios de código
+
+Se añadieron **JSDoc y comentarios educativos** a todos los archivos del proyecto:
+
+- Configuraciones: `vite.config.js`, `eslint.config.js`, `index.css`.
+- Páginas: `project-page.jsx`, `user-page.jsx`, `chat-page.jsx`.
+- Componentes: `project-author-card.jsx`, `project-review.jsx`, `review-form.jsx`, `projects-filters.jsx`, `start-rating.jsx`, `chat-view.jsx`, `conversation-item.jsx`, `conversation-list.jsx`, `message-bubble.jsx`.
+- Hooks: `use-project.js`, `user-user.js`.
+
+Cada archivo incluye una descripción JSDoc del componente/hook, sus responsabilidades, props que recibe y comportamiento principal.
+
+---
+
 ## Estructura del proyecto
 
 ```
@@ -529,19 +659,25 @@ src/
 ├── App.jsx                       # Rutas y layouts
 ├── index.css                     # Tailwind import
 ├── components/
-│   ├── navbar.jsx                # Barra de navegación con menú de usuario
+│   ├── navbar.jsx                # Barra de navegación con menú de usuario y badge chat
 │   ├── project-card.jsx          # Tarjeta de proyecto reutilizable
 │   ├── project-card-skeleton.jsx # Skeleton loading para ProjectCard
 │   ├── project-author-card.jsx   # Tarjeta de autor en detalle de proyecto
 │   ├── project-review.jsx        # Tarjeta de review individual
+│   ├── review-form.jsx           # Formulario de review con selector de estrellas
 │   ├── projects-filters.jsx      # Filtros de módulo, promoción y autor
-│   ├── start-rating.jsx          # Estrellas de valoración (1-5)
-│   └── profile-projects.jsx      # Proyectos del perfil por módulo
+│   ├── start-rating.jsx          # Estrellas de valoración (1-5, solo lectura)
+│   ├── profile-projects.jsx      # Proyectos del perfil por módulo
+│   ├── chat-view.jsx             # Vista del chat activo (mensajes + input)
+│   ├── conversation-item.jsx     # Item individual de conversación
+│   ├── conversation-list.jsx     # Lista de conversaciones
+│   └── message-bubble.jsx        # Burbuja de mensaje (propio/ajeno + eliminar)
 ├── contexts/
 │   └── auth-context.jsx          # Contexto de autenticación (sesión)
 ├── hooks/
 │   ├── use-projects.js           # Hook para listar proyectos (con filtros y debounce)
 │   ├── use-project.js            # Hook para obtener un proyecto por ID
+│   ├── use-messages.js           # Hook de mensajería (conversaciones + polling)
 │   └── user-user.js              # Hook para obtener un usuario por ID
 ├── pages/
 │   ├── home-page.jsx             # Página principal (filtros + grid de proyectos)
@@ -549,7 +685,8 @@ src/
 │   ├── register-page.jsx         # Formulario de registro
 │   ├── profile-page.jsx          # Perfil del usuario (editar + proyectos)
 │   ├── project-page.jsx          # Detalle de proyecto (hero + autor + reviews)
-│   └── user-page.jsx             # Perfil público de usuario
+│   ├── user-page.jsx             # Perfil público de usuario
+│   └── chat-page.jsx             # Página de chat (dos paneles)
 └── services/
     └── api-service.js            # Cliente HTTP (Axios) con baseURL dinámica
 ```

@@ -1,16 +1,29 @@
 import ProjectAuthorCard from "../components/project-author-card";
 import ProjectReview from "../components/project-review";
+import ReviewForm from "../components/review-form";
 import useProject from "../hooks/use-project";
 
-/** Calcula la media de ratings de las reviews. */
+/** Calcula la media de ratings de las reviews. Devuelve "0" si no hay reviews. */
 function averageRating(reviews) {
   if (!reviews?.length) return 0;
   const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
   return (sum / reviews.length).toFixed(1);
 }
 
+/**
+ * Página de detalle de un proyecto (ruta `/projects/:id`).
+ *
+ * Secciones:
+ * - Hero: título, badges (módulo, promoción, rating medio), galería de imágenes,
+ *   descripción y enlaces a GitHub / Live URL.
+ * - Autor: tarjeta con info del autor (ProjectAuthorCard).
+ * - Reviews: formulario para añadir review (ReviewForm) + lista de reviews existentes.
+ *
+ * Usa el hook `useProject()` que obtiene el proyecto por ID de la URL.
+ * Mientras carga muestra un skeleton animado con `animate-pulse`.
+ */
 function ProjectPage() {
-  const { project, loading } = useProject();
+  const { project, loading, reloadProject } = useProject();
 
   if (loading) {
     return (
@@ -122,6 +135,8 @@ function ProjectPage() {
       <ProjectAuthorCard author={project.author} />
 
       {/* ── Reviews section ── */}
+      <ReviewForm project={project} reloadProject={reloadProject} />
+
       {project.reviews?.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">
@@ -133,7 +148,11 @@ function ProjectPage() {
 
           <div className="space-y-4">
             {project.reviews.map((review) => (
-              <ProjectReview review={review} key={review.id} />
+              <ProjectReview
+                review={review}
+                key={review.id}
+                reloadProject={reloadProject}
+              />
             ))}
           </div>
         </div>

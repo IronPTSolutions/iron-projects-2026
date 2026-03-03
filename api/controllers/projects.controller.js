@@ -58,6 +58,7 @@ export async function detail(req, res) {
     .populate("author")
     .populate({
       path: "reviews",
+      sort: 1,
       populate: "author", // Populate anidado: obtiene los datos del autor de cada review
     });
 

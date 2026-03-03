@@ -1,1 +1,9 @@
+/**
+ * Punto de entrada de estilos.
+ *
+ * En Tailwind CSS v4, basta con importar "tailwindcss" para que
+ * se inyecten automáticamente las capas base, components y utilities.
+ * No se necesita tailwind.config.js — la configuración se hace
+ * directamente vía el plugin de Vite (@tailwindcss/vite).
+ */
 @import "tailwindcss";

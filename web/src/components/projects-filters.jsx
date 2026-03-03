@@ -1,3 +1,17 @@
+/**
+ * Componente de filtros para la lista de proyectos en la página Home.
+ *
+ * Filtros disponibles:
+ * - Módulo (select): 1, 2, 3 o "All".
+ * - Promoción (select): distintas convocatorias disponibles.
+ * - Autor (input text): búsqueda por nombre con debounce en el hook useProjects.
+ * - Botón Clear: resetea todos los filtros a vacío.
+ *
+ * Los filtros se gestionan como estado controlado desde el componente padre (HomePage)
+ * y se pasan como props junto con su setter.
+ *
+ * @param {{ filters: object, setFilters: function }} props
+ */
 export function ProjectsFilters({ filters, setFilters }) {
   const selectClasses =
     "w-full appearance-none rounded-xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl px-4 py-2.5 text-sm text-slate-200 shadow-sm transition-all duration-200 outline-none focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/20 hover:border-slate-600";

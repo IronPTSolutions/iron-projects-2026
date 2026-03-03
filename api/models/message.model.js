@@ -13,11 +13,6 @@ const messageSchema = new mongoose.Schema(
       ref: "User", // Referencia al usuario destinatario del mensaje
       required: true,
     },
-    subject: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     body: {
       type: String,
       required: true,
